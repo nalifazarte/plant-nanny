@@ -17,7 +17,7 @@ export function localDay(date = new Date()) {
 }
 export const id = () => crypto.randomUUID();
 export function initialState() {
-  return { app: APP, version: VERSION, settings: { goal: 1800, defaultCup: 'copo', profile: { weight: '', factor: '', activity: 'leve' } },
+  return { app: APP, version: VERSION, settings: { goal: 1800, defaultCup: 'copo', motionEnabled: true, profile: { weight: '', factor: '', activity: 'leve' } },
     cups: [{ id: 'copo', name: 'Copo', ml: 240 }, { id: 'garrafinha', name: 'Garrafinha', ml: 500 }, { id: 'garrafa', name: 'Garrafa', ml: 1000 }],
     species: [], plants: [], activeId: null, logs: [], dayGoals: {} };
 }
@@ -89,6 +89,7 @@ function unique(items) { return new Set(items.map(x => x.id)).size === items.len
 export function validateState(s) {
   assert(s && s.app === APP && s.version === VERSION, 'formato ou versão incompatível.');
   assert(s.settings && int(s.settings.goal, 100, 10000), 'meta diária.');
+  assert(s.settings.motionEnabled === undefined || typeof s.settings.motionEnabled === 'boolean', 'preferência de movimento.');
   assert(Array.isArray(s.cups) && s.cups.length > 0 && s.cups.length <= 30 && unique(s.cups), 'recipientes.');
   assert(s.cups.every(c => text(c.id) && text(c.name, 40) && int(c.ml, 1, 3000)), 'recipiente incompleto.');
   assert(s.cups.some(c => c.id === s.settings.defaultCup), 'recipiente padrão.');

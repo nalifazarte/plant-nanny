@@ -1,6 +1,6 @@
 const CACHE_PREFIX = 'brota-shell-';
-const CACHE = `${CACHE_PREFIX}v2`;
-const SHELL = ['./', './index.html', './style.css', './app.js', './art.js', './model.js', './storage.js', './manifest.webmanifest', './icon.svg', './apple-touch-icon.png', './icon-192.png', './icon-512.png'];
+const CACHE = `${CACHE_PREFIX}v5-motion`;
+const SHELL = ['./', './index.html', './style.css', './app.js', './art.js', './model.js', './storage.js', './motion.js', './motion.css', './manifest.webmanifest', './apple-touch-icon.png', './icon-192.png', './icon-512.png', './assets/plants-ink.webp', './assets/props-ink.webp', './assets/scenes-ink.webp'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)));
   // Updates wait until all open app windows close, avoiding mixed app versions.

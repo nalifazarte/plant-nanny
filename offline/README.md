@@ -2,14 +2,15 @@
 
 Primeira versão de um jogo pessoal de hidratação para iPhone. Registre a água que bebe, cuide de uma planta virtual até o nível 4 e leve-a para seu jardim. Sem login, anúncios, serviços de terceiros ou banco de dados remoto.
 
-Este jogo é uma implementação independente dentro do fork de `steveafrost/plant-nanny`. O projeto Rails original gerencia plantas reais e não corresponde ao aplicativo comercial Plant Nanny. Seu código e sua licença MIT foram preservados. Personagens e cenários do Brota são SVGs originais, desenhados por código; as imagens de referência não são distribuídas.
+Este jogo é uma implementação independente dentro do fork de `steveafrost/plant-nanny`. O projeto Rails original gerencia plantas reais e não corresponde ao aplicativo comercial Plant Nanny. Seu código e sua licença MIT foram preservados. Personagens e cenários usam novas ilustrações geradas com textura de tinta e guache, conforme a referência visual da usuária; a referência não é distribuída. Veja a [direção de arte e os prompts](ART-DIRECTION.md).
 
 ## O que está implementado
 
 - Uma planta ativa por vez, quatro fases e transferência para o jardim no nível 4.
 - Seis espécies iniciais: Trevinho, Flor de sol, Cacto abraço, Limoeiro, Flor da lua e Moranguinho.
-- Criação de novas espécies: nome, família, cor das folhas e cor de destaque. Quatro evoluções são geradas automaticamente. Esta versão não importa sprites ou ilustrações externas.
+- Criação de novas espécies: nome, família, cor das folhas e cor de destaque. Quatro evoluções são compostas a partir da família ilustrada, com máscaras de cor que preservam sua textura. Esta versão não importa sprites ou ilustrações externas.
 - Nome da planta, quatro vasos, três cenários e quatro opções de decoração.
+- Animações suaves da folhagem e dos cenários, com uma pequena reação ao registrar água. Ajustes → Animações suaves pausa todos os movimentos; a preferência Reduzir Movimento do sistema também é respeitada. Animações fora da tela ou com o app em segundo plano ficam pausadas.
 - Registro de consumo com volume e horário; correção pela exclusão e inclusão de registros.
 - Copo de 240 ml, garrafas de 500 ml e 1 L, além de recipientes criados e editados por você.
 - Meta manual e perfil opcional. O cálculo por peso usa exclusivamente o fator em ml/kg informado por você conforme sua orientação de saúde. A rotina é uma anotação e não altera a conta. Não há integração com Apple Saúde/HealthKit nem recomendação médica automática.
@@ -95,7 +96,9 @@ O teste manual deve incluir Safari em um iPhone real: instalação, reabertura e
 - `dist/`: aplicativo estático completo, sem dependências de execução.
 - `dist/model.js`: regras do jogo, relatórios e validação do backup.
 - `dist/storage.js`: persistência e transações.
-- `dist/art.js`: personagens, fases e cenários SVG originais.
+- `dist/motion.js`, `dist/motion.css`: movimentos locais em CSS e pausa por visibilidade, preferência e acessibilidade.
+- `dist/art.js`: composição dos personagens, fases, vasos e cenários; filtros para espécies próprias.
+- `dist/assets/`: atlas WebP locais com textura de tinta e guache; todos disponíveis offline.
 - `dist/sw.js`: cache da aplicação. Incremente a versão do cache ao alterar arquivos distribuídos.
 - `server.mjs`: servidor local limitado a `127.0.0.1`.
 - `test/`: testes automatizados.

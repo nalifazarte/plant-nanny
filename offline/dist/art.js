@@ -1,4 +1,5 @@
-// Original, code-drawn characters. No remote images or commercial game assets.
+// Local ink-and-gouache game art, generated from the user's visual direction.
+// Interface icons and freely colorable custom plants retain a code-native layer.
 export const icons = {
   drop: '<path d="M12 3C9 8 5 11 5 15a7 7 0 0 0 14 0c0-4-4-7-7-12Z"/><path d="M8 15a4 4 0 0 0 4 4"/>',
   leaf: '<path d="M20 3C8 2 3 8 5 15c7 4 15-1 15-12Z"/><path d="M4 21 15 9"/>',
@@ -18,41 +19,35 @@ export const icons = {
 };
 export const icon = (name, cls = '') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[name] ?? icons.leaf}</svg>`;
 export const esc = x => String(x).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
-const face = (y, scale = 1) => `<g transform="translate(0 ${y}) scale(${scale})"><ellipse cx="-17" cy="0" rx="5" ry="7" fill="#294d3e"/><ellipse cx="17" cy="0" rx="5" ry="7" fill="#294d3e"/><circle cx="-15.5" cy="-2" r="1.8" fill="#fff"/><circle cx="18.5" cy="-2" r="1.8" fill="#fff"/><ellipse cx="-27" cy="10" rx="8" ry="4" fill="#eead9e" opacity=".65"/><ellipse cx="27" cy="10" rx="8" ry="4" fill="#eead9e" opacity=".65"/><path d="M-5 10Q0 16 5 10" fill="none" stroke="#294d3e" stroke-width="2.5" stroke-linecap="round"/></g>`;
-function sprig(x, y, angle, color) {
-  return `<path d="M0 0Q-30-32-48-12Q-33 13 0 0Q24-35 44-24Q45 4 0 0" transform="translate(${x} ${y}) rotate(${angle})" fill="${color}"/>`;
+const rows = { trevo: 0, flor: 1, cacto: 2, limao: 3, luna: 4, morango: 5 };
+const pots = { barro: 0, creme: 1, rosa: 2, azul: 3 };
+const shapeRows = { leaf: 0, flower: 4, cactus: 2, tree: 3, berry: 5 };
+const sprite = (asset, x, y, sheetWidth, sheetHeight, frame = '0 0 240 240') => `<svg x="${frame.split(' ')[0]}" y="${frame.split(' ')[1]}" width="${frame.split(' ')[2]}" height="${frame.split(' ')[3]}" viewBox="${x} ${y} 256 256" overflow="hidden"><image href="./assets/${asset}" width="${sheetWidth}" height="${sheetHeight}"/></svg>`;
+export function plantArt(species, lv = 1, pot = 'barro', {small = false} = {}) {
+  const row = rows[species.id] ?? shapeRows[species.shape] ?? 0;
+  const col = Math.max(0, Math.min(3, lv - 1));
+  const custom = rows[species.id] === undefined;
+  // Keep custom colors functional without flattening the illustrated texture.
+  // Two masks distinguish green foliage from colored flowers/fruit; black ink
+  // and the transparent background remain unchanged.
+  const filterKey = `tint-${species.color.replace('#','')}-${species.accent.replace('#','')}-${row}-${col}`;
+  const colorMatrix = hex => {
+    const rgb = [1,3,5].map(i => parseInt(hex.slice(i,i+2),16)/255);
+    return rgb.map(v => `${(.28*v*1.6).toFixed(4)} ${(.59*v*1.6).toFixed(4)} ${(.13*v*1.6).toFixed(4)} 0 0`).join(' ') + ' 0 0 0 1 0';
+  };
+  const defs = custom ? `<defs><filter id="${filterKey}-green" color-interpolation-filters="sRGB"><feColorMatrix values="${colorMatrix(species.color)}"/></filter><filter id="${filterKey}-accent" color-interpolation-filters="sRGB"><feColorMatrix values="${colorMatrix(species.accent)}"/></filter><filter id="${filterKey}-mask" color-interpolation-filters="sRGB"><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 -3 5 -2 0 0"/><feComponentTransfer><feFuncA type="discrete" tableValues="0 0 1 1"/></feComponentTransfer></filter><mask id="${filterKey}-foliage" mask-type="alpha"><g filter="url(#${filterKey}-mask)">${sprite('plants-ink.webp', col*256, row*256,1024,1536,'10 -5 220 220')}</g></mask><filter id="${filterKey}-color-mask" color-interpolation-filters="sRGB"><feColorMatrix values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 3 -4 3 0 -0.7"/><feComponentTransfer><feFuncA type="discrete" tableValues="0 0 1 1"/></feComponentTransfer></filter><mask id="${filterKey}-flowers" mask-type="alpha"><g filter="url(#${filterKey}-color-mask)">${sprite('plants-ink.webp',col*256,row*256,1024,1536,'10 -5 220 220')}</g></mask></defs>` : '';
+  const body = sprite('plants-ink.webp',col*256,row*256,1024,1536,'10 -5 220 220');
+  return `<svg class="plant-art ink-plant ${small?'small':''}" viewBox="0 0 240 300" role="img" aria-label="${esc(species.name)}, nível ${lv}">${defs}<ellipse class="plant-shadow" cx="121" cy="288" rx="70" ry="7" fill="#17251b" opacity=".16"/><g class="plant-reaction"><g class="plant-foliage" style="--sway-time:${6.5+row*.55}s;--sway-phase:-${1+row*.7+col*.3}s;--sway-angle:${lv===1?2.2:row===2?1:1.6}deg"><g class="plant-breath">${body}${custom?`<g mask="url(#${filterKey}-foliage)" filter="url(#${filterKey}-green)">${body}</g><g mask="url(#${filterKey}-flowers)" filter="url(#${filterKey}-accent)">${body}</g>`:''}</g></g></g>${sprite('props-ink.webp',(pots[pot]??0)*256,0,1024,512,'48 171 144 130')}<g aria-hidden="true" class="water-wish" style="--wish-delay:.05s"><path d="m48 142 3-7 3 7 7 3-7 3-3 7-3-7-7-3Z" fill="#c5a1e5" stroke="#37492b" stroke-width=".8"/></g><g aria-hidden="true" class="water-wish" style="--wish-delay:.2s"><path d="M189 119q-7 9-7 12a7 7 0 0 0 14 0q0-3-7-12" fill="#b9d9c1" stroke="#37492b" stroke-width=".8"/></g></svg>`;
 }
-export function plantArt(species, lv = 1, pot = 'barro', { small = false } = {}) {
-  const c = species.color, a = species.accent;
-  const colors = { barro: ['#d39979', '#bd7e61'], creme: ['#ede9d9', '#d4d2bf'], rosa: ['#d8a4a3', '#bd8589'], azul: ['#91b8c1', '#729ca9'] };
-  const [p, shadow] = colors[pot] ?? colors.barro;
-  let body = '';
-  if (lv === 1) {
-    body = `<path d="M0 184v-41" stroke="${c}" stroke-width="9" stroke-linecap="round"/>${sprig(0, 146, -10, c)}<ellipse cy="181" rx="33" ry="29" fill="${c}"/>${face(178, .7)}`;
-  } else if (species.shape === 'cactus') {
-    const height = lv === 2 ? 100 : lv === 3 ? 80 : 61;
-    body = `<path d="M-28 169h-27v-35M28 153h28v-37" fill="none" stroke="${c}" stroke-width="22" stroke-linecap="round"/><rect x="-36" y="${height}" width="72" height="${205-height}" rx="36" fill="${c}"/><path d="M-19 122v11m42-24v10m-3 57v9m-40-26v8" stroke="#dae7c9" stroke-width="3" stroke-linecap="round"/>${face(height + 45)}${lv === 4 ? `<g transform="translate(0 60)">${petals(a, 19)}<circle r="9" fill="#f1d690"/></g>` : ''}`;
-  } else if (species.shape === 'tree') {
-    body = `<path d="M-18 200-10 106h20l12 94" fill="#ae8970"/><circle cy="${lv === 2 ? 129 : 105}" r="${lv === 2 ? 43 : lv === 3 ? 57 : 64}" fill="${c}"/>${lv > 2 ? `<circle cx="-40" cy="106" r="34" fill="${c}"/><circle cx="37" cy="92" r="36" fill="${c}"/>` : ''}${face(lv === 2 ? 128 : 110)}${lv === 4 ? `<g fill="${a}"><ellipse cx="-38" cy="86" rx="10" ry="13" transform="rotate(-20 -38 86)"/><ellipse cx="32" cy="133" rx="10" ry="13"/><ellipse cx="24" cy="67" rx="10" ry="13"/></g>` : ''}`;
-  } else if (species.shape === 'flower') {
-    const y = lv === 2 ? 130 : lv === 3 ? 107 : 87;
-    body = `<path d="M0 202V${y}" stroke="${c}" stroke-width="12" stroke-linecap="round"/>${sprig(0, 170, -9, c)}${lv >= 3 ? sprig(0, 148, 180, c) : ''}<g transform="translate(0 ${y})">${petals(a, lv === 2 ? 26 : lv === 3 ? 35 : 43)}<circle r="${lv === 2 ? 24 : 32}" fill="#f3d796"/>${face(0, lv === 2 ? .7 : .9)}</g>${lv === 4 ? `<path d="m-73 78 3-8 3 8 8 3-8 3-3 8-3-8-8-3Z" fill="${a}"/>` : ''}`;
-  } else if (species.shape === 'berry') {
-    const sz = lv === 2 ? .75 : lv === 3 ? .9 : 1.05;
-    body = `<g transform="translate(0 ${lv === 2 ? 154 : 142}) scale(${sz})"><path d="M-51-10Q-73 16-31 56Q0 84 31 56Q73 16 51-10Q29-34 0-21Q-29-34-51-10" fill="${a}"/>${sprig(0,-21,5,c)}${face(12)}<g fill="#fae8c1"><ellipse cx="-38" cy="8" rx="2" ry="3"/><ellipse cx="36" cy="16" rx="2" ry="3"/><ellipse cx="-17" cy="49" rx="2" ry="3"/><ellipse cx="13" cy="54" rx="2" ry="3"/></g></g>`;
-  } else {
-    const size = lv === 2 ? .82 : lv === 3 ? 1 : 1.12;
-    body = `<g transform="translate(0 ${lv === 2 ? 157 : 149}) scale(${size})"><path d="M0-59C-12-42-57-32-51 15Q-48 57 0 57Q52 57 54 15C57-18 17-33 0-59" fill="${c}"/><path d="M-30-6Q-42 11-32 29" fill="none" stroke="${a}" stroke-width="8" stroke-linecap="round"/>${face(10)}${sprig(0,-56,lv===4 ? -5 : -25,c)}${lv === 4 ? `<path d="M6-58Q22-103 49-82Q43-52 6-58" fill="${a}"/>` : ''}</g>`;
-  }
-  return `<svg class="plant-art ${small ? 'small' : ''}" viewBox="0 0 240 300" role="img" aria-label="${esc(species.name)}, nível ${lv}"><g transform="translate(120 0)"><ellipse cy="276" rx="77" ry="9" fill="#345949" opacity=".10"/>${body}<path d="M-64 207h128l-13 59Q49 277 0 277T-51 266Z" fill="${p}"/><path d="M39 215h23l-11 51Q48 273 35 274Z" fill="${shadow}" opacity=".55"/><rect x="-71" y="199" width="142" height="26" rx="9" fill="${p}"/><path d="M-61 204h105" stroke="#fff" opacity=".25" stroke-width="4" stroke-linecap="round"/><ellipse cy="201" rx="61" ry="5" fill="#765b43" opacity=".4"/></g></svg>`;
-}
-function petals(color, r) {
-  return Array.from({length: 8}, (_,i) => `<ellipse cx="0" cy="-${r}" rx="${r*.45}" ry="${r*.7}" fill="${color}" transform="rotate(${i*45})"/>`).join('');
-}
-export function landscape(scene = 'amanhecer', decor = 'nenhuma') {
-  const night = scene === 'noite', lake = scene === 'lago';
-  const sky = night ? '#405763' : lake ? '#cfe8df' : '#e8edde';
-  const hills = night ? ['#5b7370', '#72887a'] : lake ? ['#97bdb0', '#b3ccad'] : ['#becdb0', '#d3d9b8'];
-  let extras = decor === 'cogumelos' ? '<g transform="translate(42 337)"><path d="M0-8v15m17-8v12" stroke="#eee9d4" stroke-width="7"/><path d="M-15-8Q0-31 15-8Z" fill="#cc8e7d"/><path d="M6 0q11-23 24 0Z" fill="#d6aa81"/><g fill="#f5e9d1"><circle cx="-3" cy="-14" r="2"/><circle cx="20" cy="-6" r="2"/></g></g>' : decor === 'pedras' ? '<g fill="#a8b1a1"><ellipse cx="48" cy="346" rx="18" ry="10"/><ellipse cx="75" cy="349" rx="12" ry="7"/><ellipse cx="335" cy="350" rx="17" ry="8"/></g>' : decor === 'estrelas' ? '<g fill="#e6cb83"><path d="m55 205 4-12 4 12 12 4-12 4-4 12-4-12-12-4Z"/><path d="m333 145 3-9 3 9 9 3-9 3-3 9-3-9-9-3Z"/></g>' : '';
-  return `<svg class="landscape" viewBox="0 0 400 390" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="400" height="390" fill="${sky}"/>${night ? '<circle cx="304" cy="73" r="25" fill="#eee8c6"/><circle cx="315" cy="64" r="22" fill="#405763"/><g fill="#e2d8af"><circle cx="91" cy="53" r="2"/><circle cx="167" cy="93" r="2"/><circle cx="345" cy="128" r="2"/><circle cx="252" cy="39" r="2"/></g>' : '<circle cx="302" cy="88" r="43" fill="#f5e8bb"/><circle cx="302" cy="88" r="60" fill="#f5e8bb" opacity=".3"/>'}<path d="M0 218Q80 111 193 221Q308 111 400 204V390H0Z" fill="${hills[0]}"/><path d="M0 258Q130 192 216 251Q318 200 400 240V390H0Z" fill="${hills[1]}"/>${lake ? '<path d="M0 277Q163 250 400 279v35H0Z" fill="#b6d9cd"/><path d="M275 289h62m-39 12h68M25 295h61" stroke="#d7ebe0" stroke-width="2"/>' : ''}<path d="M22 0v300m356-300v300M0 299h400" stroke="${night ? '#819283' : '#fbf6e8'}" stroke-width="12" opacity=".65"/><rect y="310" width="400" height="80" fill="${night ? '#b2ad91' : '#dfd1af'}"/><path d="M0 322h400M0 380h400" stroke="#b5a585" stroke-width="2" opacity=".45"/><path d="M0 350q45-81 71-36Q49 339 0 350" fill="#8eaa7d"/><path d="M400 354q-45-89-77-39Q350 342 400 354" fill="#a0b28a"/>${extras}</svg>`;
+export function landscape(scene='amanhecer', decor='nenhuma') {
+  const col = {amanhecer:0,lago:1,noite:2}[scene]??0;
+  const decoration = {pedras:0,cogumelos:1,estrelas:2}[decor];
+  const night = scene==='noite';
+  const fireflies = night ? [[65,240],[320,225],[275,265],[97,185],[340,130]].map(([x,y],i)=>`<circle class="ambient-firefly" cx="${x}" cy="${y}" r="${i%2?1.6:2}" fill="#f2dc99" style="--phase:-${i*1.7}s;--period:${7+i*.8}s"/>`).join('') : '';
+  const stars = night ? [[68,86],[133,48],[287,129]].map(([x,y],i)=>`<path class="ambient-sparkle" d="m${x} ${y-6} 1.8 4.2 4.2 1.8-4.2 1.8-1.8 4.2-1.8-4.2-4.2-1.8 4.2-1.8Z" fill="#fff0cd" style="--phase:-${i*2.1}s"/>`).join('') : '';
+  const daylight = night ? '' : `<g class="ambient-cloud"><path d="M111 115q-3-8 5-10 5-11 13-3 10-4 12 6 11-1 11 7Z" fill="#fff9e8"/></g><g class="ambient-cloud second"><path d="M250 155q-3-7 4-9 4-8 11-3 8-2 10 5 7 0 8 7Z" fill="#fff9e8"/></g><g class="ambient-butterfly"><g class="butterfly-wings">${sprite('props-ink.webp',768,256,1024,512,'306 138 40 40')}</g></g>`;
+  const halo = scene==='amanhecer' ? '<circle class="ambient-halo" cx="303" cy="79" r="38" fill="#ffd56e"/>' : '';
+  const ripples = scene==='lago' ? '<g fill="none" stroke="#fff5d7" stroke-width="1.4" stroke-linecap="round"><path class="ambient-ripple" d="M76 232q16-3 32 0" style="--phase:-2s"/><path class="ambient-ripple" d="M260 249q20-3 40 0" style="--phase:-6s"/><path class="ambient-ripple" d="M192 216q10-2 20 0" style="--phase:-4s"/></g>' : '';
+  const decorArt = decoration===undefined ? '' : sprite('props-ink.webp',decoration*256,256,1024,512,decoration===2?'292 83 65 65':'16 283 85 85');
+  return `<svg class="landscape ink-landscape" viewBox="0 0 400 390" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><svg width="400" height="390" viewBox="${col*600} 0 600 600" preserveAspectRatio="xMidYMid slice" overflow="hidden"><image href="./assets/scenes-ink.webp" width="1800" height="600"/></svg><g class="ambient-motion">${halo}${daylight}${stars}${fireflies}${ripples}</g><g class="${decor==='cogumelos'?'decor-sway':decor==='estrelas'?'ambient-sparkle':''}">${decorArt}</g></svg>`;
 }

@@ -8,7 +8,7 @@ function worker() {
   const context={
     URL,
     self:{location:{origin:'https://garden.example'},clients:{claim:async()=>{claimed=true;}},addEventListener:(event,handler)=>handlers[event]=handler},
-    caches:{open:async()=>({addAll:async paths=>{added.push(...paths);}}),keys:async()=>['brota-shell-obsolete','another-app-cache','brota-shell-v2'],delete:async name=>deleted.push(name),match:async(request)=>cached.get(typeof request==='string'?request:request.url)},
+    caches:{open:async()=>({addAll:async paths=>{added.push(...paths);}}),keys:async()=>['brota-shell-obsolete','another-app-cache','brota-shell-v5-motion'],delete:async name=>deleted.push(name),match:async(request)=>cached.get(typeof request==='string'?request:request.url)},
     fetch:async()=>{fetches++;throw Error('offline');}
   };
   vm.runInNewContext(source,context);
@@ -20,6 +20,10 @@ async function fetchEvent(w,request) {
 test('all offline shell assets exist in the release without remote dependencies',async()=>{
   const w=worker();let install;w.handlers.install({waitUntil:p=>install=p});await install;
   assert.ok(w.added.includes('./app.js'));assert.ok(w.added.includes('./apple-touch-icon.png'));
+  const art=await readFile(new URL('../dist/art.js',import.meta.url),'utf8');
+  for(const asset of new Set([...art.matchAll(/([\w-]+\.webp)/g)].map(m=>m[1]))) {
+    assert.ok(w.added.includes('./assets/'+asset),asset+' must be cached for offline play');
+  }
   for(const path of w.added)await access(new URL('../dist/'+(path==='./'?'index.html':path),import.meta.url));
 });
 test('cached application files are served without contacting a server',async()=>{
