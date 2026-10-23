@@ -1,3 +1,11 @@
+# Brota — versão offline para iPhone
+
+Este fork inclui um jogo independente de hidratação com plantas virtuais, quatro níveis de crescimento, jardim, personalização e backup local. O aplicativo está em [`offline/`](offline/README.md); não depende do servidor Rails abaixo.
+
+Para experimentar: `cd offline` e `npm start`. Para instalar no iPhone, disponibilize `offline/dist/` em HTTPS e adicione à Tela de Início pelo Safari. Os dados ficam no aparelho e o uso diário funciona offline após a instalação.
+
+## Projeto Rails original
+
 ![plant nanny logo](https://steveafrost.com/assets/img/blogs/plantnannyghlogo.jpg)
 Plant Nanny helps with managing indoor plants. Some indoor plants require sunlight you may not have, watering you don't have time for, or difficulty you just plain don't care to challenge. Plant Nanny aims to weed out the hardest plants to grow indoors and provide grounds for users to leave tips about plants with which they've had success. (all puns intended)
 
